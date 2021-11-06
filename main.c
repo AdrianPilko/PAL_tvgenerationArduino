@@ -181,7 +181,7 @@ int main()
 		{
 			{
 				// delay some to bring the pixels into the visible screen area form the left
-				for (i = 0; i < 18; i++)
+				for (i = 0; i < 20; i++)
 				{
 					__asm__ __volatile__ ("nop");
 				}
