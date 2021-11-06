@@ -98,6 +98,7 @@ int main()
 	uint8_t  vSync = 0;
 	uint8_t i = 0;
 	uint8_t drawLine = 0;
+	uint8_t yPos = 0;
 
 	for (uint8_t y = 0; y < YSIZE-16; y+=16)
 	{
@@ -179,45 +180,53 @@ int main()
 
 		if (drawLine)
 		{
+			yPos++; // maintain a counter that starts at 1 for first line drawn
 			{
-				// delay some to bring the pixels into the visible screen area form the left
-				for (i = 0; i < 20; i++)
+				if ((yPos == 1) || (yPos == LAST_LINE_DRAWN-FIRST_LINE_DRAWN))
 				{
-					__asm__ __volatile__ ("nop");
+					// delay some to bring the pixels into the visible screen area form the left
+					for (i = 0; i < 20; i++)
+					{
+						__asm__ __volatile__ ("nop");
+					}
+					LUM_ON
+					for (i = 0; i < 171; i++)
+					{
+						__asm__ __volatile__ ("nop");
+					}
+					LUM_OFF
 				}
-				LUM_ON
+				else
+				{
+					// delay some to bring the pixels into the visible screen area form the left
+					for (i = 0; i < 20; i++)
+					{
+						__asm__ __volatile__ ("nop");
+					}
+					LUM_ON
+					// draw the smallest width line possible with these ddrb and portb setting macros (is still 2mm wide!)
+					LUM_OFF
 
-				// draw the smallest width line possible with these ddrb and portb setting macros (is still 2mm wide!)
+					for (i = 0; i < 170; i++)
+					{
+						__asm__ __volatile__ ("nop");
+					}
+					LUM_ON
+					// draw the smallest width line possible with these ddrb and portb setting macros (is still 2mm wide!)
+					LUM_OFF
+				}
 
-				LUM_OFF
 			}
-
 		}
 
 		lineCounter++;
 		switch (lineCounter)
 		{
-			case FIRST_LINE_DRAWN: drawLine = 1; break;
+			case FIRST_LINE_DRAWN: drawLine = 1; yPos = 0; break;
 			case LAST_LINE_DRAWN: drawLine = 0; break;
 			case MAX_LINE_BEFORE_BLANK-6: vSync = 1; break;
-			case MAX_LINE_BEFORE_BLANK+6: lineCounter = 0; vSync = 0; break;
+			case MAX_LINE_BEFORE_BLANK: vSync = 0; break;
+			case MAX_LINE_BEFORE_BLANK+6:lineCounter = 0; break;
 		}
 	}
 }
-
-
-#if 0
-else
-{
-	DDRB |= (1 << LUMINANCE_PIN); // pixel on
-	PORTB |= (1 << LUMINANCE_PIN); // pixel on
-	for (i = 0; i < 205; i++)
-	{
-		__asm__ __volatile__ ("nop");
-	}
-
-	DDRB &= ~(1 << LUMINANCE_PIN); // pixel off
-	PORTB &= ~(1 << LUMINANCE_PIN); // pixel off
-}
-
-#endif
