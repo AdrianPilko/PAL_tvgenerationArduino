@@ -11,88 +11,102 @@
 #define MAX_LINE_BEFORE_BLANK 312
 #define FIRST_LINE_DRAWN 32
 #define LAST_LINE_DRAWN 272
-#define HALF_SCREEN 110
+#define HALF_SCREEN 120
 #define HSYNC_BACKPORCH 18
 
 #define  LUM_ON_OFF {DDRB = 0b11000; PORTB = 0b11000;PORTB = 0;}
 // cycles i.e. LUM_ON and LUM_OFF must take exactly same time
-#define  LUM_ON { 	__asm__ __volatile__ ("sbi 0x05,4"); __asm__ __volatile__ ("sbi 0x04,4");}
-
-// cycles i.e. LUM_ON and LUM_OFF must take exactly same time
-#define  LUM_OFF {__asm__ __volatile__ ("cbi 0x05,4"); __asm__ __volatile__ ("cbi 0x04,4"); }
-
-// from experimenting a line started at linCounter = 25 appears right at top of screen one at 285 to 286 is bottom
-// a delay in clock cycles of 14 to plus a delay of 148 clock cycles gives a usable horizontal line length
 
 // XSIZE is in bytes, and currently due to lack of time (spare clock cycles) only able todo 8 *8(bits) pixels = 64
 // will need some serious optimisation later!
 #define XSIZE 8
 #define YSIZE (HALF_SCREEN*2)
 
-uint8_t symbols[5][8];
+uint8_t symbols[5][5];
+uint8_t fonts[5][5];
+// although we have uint8_t 8bits wide, the character set will be 5bits wide and we'll only draw 5bits from memory for each element
 uint8_t screenMemory[YSIZE][XSIZE];
 
 
 inline void putSymXY(uint8_t x,uint8_t y, uint8_t symbolNumber)
 {
-	for (uint8_t i = 0; i < 8; i++)
+	for (uint8_t i = 0; i < 5; i++)
 	{
 		screenMemory[y+i][x] = symbols[symbolNumber][i];
+	}
+}
+inline void putCharXY(uint8_t x,uint8_t y, uint8_t charNumber)
+{
+	for (uint8_t i = 0; i < 5; i++) // the fonts are 5lines high * 5bits wide
+	{
+		screenMemory[y+i][x] = fonts[charNumber][i];
 	}
 }
 
 void clearScreen()
 {
-	memset (&screenMemory[0][0],0,sizeof(uint8_t) * YSIZE * XSIZE );
+	for (uint8_t y = 0; y < YSIZE; y++)
+	{
+		for (uint8_t x = 0; x < XSIZE; x++)
+			screenMemory[y][x] = 0;
+	}
 }
+
+// cbi and sbi (clearbit and set bit both take 2 clock cycles, you can't use ldi on io port reg or from registers
+#define  LUM_ON  {__asm__ __volatile__ ("sbi 0x05,4"); __asm__ __volatile__ ("sbi 0x04,4");}
+#define  LUM_OFF {__asm__ __volatile__ ("cbi 0x05,4"); __asm__ __volatile__ ("cbi 0x04,4");}
+
+
 
 int main()
 {
-	symbols[0][0] = 0b00000000;
-	symbols[0][1] = 0b01111110;
-	symbols[0][2] = 0b01000010;
-	symbols[0][3] = 0b01000010;
-	symbols[0][4] = 0b01000010;
-	symbols[0][5] = 0b01000010;
-	symbols[0][6] = 0b01111110;
-	symbols[0][7] = 0b00000000;
+	symbols[0][0] = 0b01010;
+	symbols[0][1] = 0b10100;
+	symbols[0][2] = 0b01010;
+	symbols[0][3] = 0b10100;
+	symbols[0][4] = 0b01010;
 
-	symbols[1][0] = 0b11111111;
-	symbols[1][1] = 0b10000001;
-	symbols[1][2] = 0b10111101;
-	symbols[1][3] = 0b10100101;
-	symbols[1][4] = 0b10100101;
-	symbols[1][5] = 0b10111101;
-	symbols[1][6] = 0b10000001;
-	symbols[1][7] = 0b11111111;
+	symbols[1][0] = 0b11111;
+	symbols[1][1] = 0b10001;
+	symbols[1][2] = 0b10101;
+	symbols[1][3] = 0b10101;
+	symbols[1][4] = 0b10101;
 
-	symbols[2][0] = 0b11011011;
-	symbols[2][1] = 0b00000000;
-	symbols[2][2] = 0b01100110;
-	symbols[2][3] = 0b00000000;
-	symbols[2][4] = 0b00011000;
-	symbols[2][5] = 0b00011000;
-	symbols[2][6] = 0b10000001;
-	symbols[2][7] = 0b11111111;
+	symbols[2][0] = 0b00000;
+	symbols[2][1] = 0b01010;
+	symbols[2][2] = 0b01010;
+	symbols[2][3] = 0b00100;
+	symbols[2][4] = 0b00100;
 
-	symbols[3][0] = 0b11111111;
-	symbols[3][1] = 0b11111111;
-	symbols[3][2] = 0b11111111;
-	symbols[3][3] = 0b11111111;
-	symbols[3][4] = 0b11111111;
-	symbols[3][5] = 0b11111111;
-	symbols[3][6] = 0b11111111;
-	symbols[3][7] = 0b11111111;
+	symbols[3][0] = 0b11111;
+	symbols[3][1] = 0b11111;
+	symbols[3][2] = 0b11111;
+	symbols[3][3] = 0b11111;
+	symbols[3][4] = 0b11111;
 
-	symbols[4][0] = 0b00000000;
-	symbols[4][1] = 0b00000000;
-	symbols[4][2] = 0b00000000;
-	symbols[4][3] = 0b00000000;
-	symbols[4][4] = 0b00000000;
-	symbols[4][5] = 0b00000000;
-	symbols[4][6] = 0b00000000;
-	symbols[4][7] = 0b00000000;
+	symbols[4][0] = 0b00000;
+	symbols[4][1] = 0b00000;
+	symbols[4][2] = 0b00000;
+	symbols[4][3] = 0b00000;
+	symbols[4][4] = 0b00000;
 
+	fonts[0][0] = 0b00100; fonts[1][0] = 0b11110;fonts[2][0] = 0b01110;fonts[3][0] = 0b11110;
+	fonts[0][1] = 0b01010; fonts[1][1] = 0b10001;fonts[2][1] = 0b10001;fonts[3][1] = 0b10001;
+	fonts[0][2] = 0b11111; fonts[1][2] = 0b11110;fonts[2][2] = 0b10000;fonts[3][2] = 0b10001;
+	fonts[0][3] = 0b10001; fonts[1][3] = 0b10001;fonts[2][3] = 0b10001;fonts[3][3] = 0b10001;
+	fonts[0][4] = 0b10001; fonts[1][4] = 0b11110;fonts[2][4] = 0b01110;fonts[3][4] = 0b11110;
+
+	fonts[4][0] = 0b11111; fonts[5][0] = 0b11111;fonts[6][0] = 0b01110;fonts[7][0] = 0b10001;
+	fonts[4][1] = 0b10000; fonts[5][1] = 0b10000;fonts[6][1] = 0b10000;fonts[7][1] = 0b10001;
+	fonts[4][2] = 0b11110; fonts[5][2] = 0b11110;fonts[6][2] = 0b10011;fonts[7][2] = 0b11111;
+	fonts[4][3] = 0b10000; fonts[5][3] = 0b10000;fonts[6][3] = 0b10001;fonts[7][3] = 0b10001;
+	fonts[4][4] = 0b11111; fonts[5][4] = 0b10000;fonts[6][4] = 0b01110;fonts[7][4] = 0b10001;
+
+	fonts[4][0] = 0b11111; fonts[5][0] = 0b00111;fonts[6][0] = 0b10001;fonts[7][0] = 0b10000;
+	fonts[4][1] = 0b00100; fonts[5][1] = 0b00001;fonts[6][1] = 0b10010;fonts[7][1] = 0b10000;
+	fonts[4][2] = 0b00100; fonts[5][2] = 0b00001;fonts[6][2] = 0b11100;fonts[7][2] = 0b10000;
+	fonts[4][3] = 0b00100; fonts[5][3] = 0b00001;fonts[6][3] = 0b10010;fonts[7][3] = 0b10000;
+	fonts[4][4] = 0b11111; fonts[5][4] = 0b11110;fonts[6][4] = 0b10001;fonts[7][4] = 0b11111;
 
 	uint16_t lineCounter = 0;
 	uint8_t  vSync = 0;
@@ -100,14 +114,16 @@ int main()
 	uint8_t drawLine = 0;
 	uint8_t yPos = 0;
 
-	for (uint8_t y = 0; y < YSIZE-16; y+=16)
+	clearScreen();
+
+	for (uint8_t y = 2; y < YSIZE-10; y+=10)
 	{
-		for (uint8_t x = 0; x < XSIZE; x+=2)
+		for (uint8_t x = 0; x < XSIZE-1; x+=2)
 		{
-			putSymXY(x,y,3);
-			putSymXY(x+1,y,4);
-			putSymXY(x,y+8,4);
-			putSymXY(x+1,y+8,3);
+			putSymXY(x,y,3); // solid
+			putSymXY(x+1,y,4); // space
+			putSymXY(x,y+5,4);// space
+			putSymXY(x+1,y+5,3); // solid
 		}
 	}
 
@@ -116,8 +132,6 @@ int main()
 	CLKPR = 0b10000000; // set the CLKPCE bit to enable the clock prescaler to be changed
 	CLKPR = 0b10000000; // zero the CLKPS3 CLKPS2 CLKPS1 CLKPS0 bits to disable and clock division
 	CLKPR = 0b00000000; // clear CLKPCE bit
-
-	clearScreen();
 
 	DDRB |= 1 << COMPOSITE_PIN;
 	DDRB |= 1 << LUMINANCE_PIN;
@@ -190,7 +204,7 @@ int main()
 						__asm__ __volatile__ ("nop");
 					}
 					LUM_ON
-					for (i = 0; i < 171; i++)
+					for (i = 0; i < 151; i++)
 					{
 						__asm__ __volatile__ ("nop");
 					}
@@ -207,7 +221,22 @@ int main()
 					// draw the smallest width line possible with these ddrb and portb setting macros (is still 2mm wide!)
 					LUM_OFF
 
-					for (i = 0; i < 170; i++)
+					// draw Pixels
+					if (yPos < YSIZE)
+					{
+						for (uint8_t x = 0; x < XSIZE; x++)
+						{
+							uint8_t thebits = screenMemory[yPos][x];
+							if (thebits & 0b10000) LUM_ON else LUM_OFF
+							if (thebits & 0b01000) LUM_ON else LUM_OFF
+							if (thebits & 0b00100) LUM_ON else LUM_OFF
+							if (thebits & 0b00010) LUM_ON else LUM_OFF
+							if (thebits & 0b00001) LUM_ON else LUM_OFF
+						}
+					}
+					LUM_OFF
+					// put another vertical bar at end to see what time is used processing screen memory
+					for (i = 0; i < 10; i++)
 					{
 						__asm__ __volatile__ ("nop");
 					}
@@ -215,7 +244,6 @@ int main()
 					// draw the smallest width line possible with these ddrb and portb setting macros (is still 2mm wide!)
 					LUM_OFF
 				}
-
 			}
 		}
 
