@@ -23,7 +23,7 @@
 #define YSIZE (HALF_SCREEN*2)
 
 uint8_t symbols[5][5];
-uint8_t fonts[5][5];
+uint8_t fonts[8][5];
 // although we have uint8_t 8bits wide, the character set will be 5bits wide and we'll only draw 5bits from memory for each element
 uint8_t screenMemory[YSIZE][XSIZE];
 
@@ -37,7 +37,7 @@ inline void putSymXY(uint8_t x,uint8_t y, uint8_t symbolNumber)
 }
 inline void putCharXY(uint8_t x,uint8_t y, uint8_t charNumber)
 {
-	for (uint8_t i = 0; i < 5; i++) // the fonts are 5lines high * 5bits wide
+	for (uint8_t i = 0; i < 8; i++) // the fonts are 5lines high * 5bits wide
 	{
 		screenMemory[y+i][x] = fonts[charNumber][i];
 	}
@@ -53,9 +53,8 @@ void clearScreen()
 }
 
 // cbi and sbi (clearbit and set bit both take 2 clock cycles, you can't use ldi on io port reg or from registers
-#define  LUM_ON  {__asm__ __volatile__ ("sbi 0x05,4"); __asm__ __volatile__ ("sbi 0x04,4");}
+#define  LUM_ON  {__asm__ __volatile__ ("sbi 0x05,4"); __asm__ __volatile__ ("sbi 0x04,4");__asm__ __volatile__ ("nop");}
 #define  LUM_OFF {__asm__ __volatile__ ("cbi 0x05,4"); __asm__ __volatile__ ("cbi 0x04,4");}
-
 
 
 int main()
@@ -90,23 +89,32 @@ int main()
 	symbols[4][3] = 0b00000;
 	symbols[4][4] = 0b00000;
 
-	fonts[0][0] = 0b00100; fonts[1][0] = 0b11110;fonts[2][0] = 0b01110;fonts[3][0] = 0b11110;
-	fonts[0][1] = 0b01010; fonts[1][1] = 0b10001;fonts[2][1] = 0b10001;fonts[3][1] = 0b10001;
-	fonts[0][2] = 0b11111; fonts[1][2] = 0b11110;fonts[2][2] = 0b10000;fonts[3][2] = 0b10001;
-	fonts[0][3] = 0b10001; fonts[1][3] = 0b10001;fonts[2][3] = 0b10001;fonts[3][3] = 0b10001;
-	fonts[0][4] = 0b10001; fonts[1][4] = 0b11110;fonts[2][4] = 0b01110;fonts[3][4] = 0b11110;
+	fonts[0][0] = 0b00100; fonts[1][0] = 0b11110;fonts[2][0] = 0b01110;fonts[3][0] = 0b11100;
+	fonts[0][1] = 0b01010; fonts[1][1] = 0b10001;fonts[2][1] = 0b10001;fonts[3][1] = 0b10010;
+	fonts[0][2] = 0b10001; fonts[1][2] = 0b10001;fonts[2][2] = 0b10000;fonts[3][2] = 0b10001;
+	fonts[0][3] = 0b10001; fonts[1][3] = 0b10010;fonts[2][3] = 0b10000;fonts[3][3] = 0b10001;
+	fonts[0][4] = 0b11111; fonts[1][4] = 0b11110;fonts[2][4] = 0b10000;fonts[3][4] = 0b10001;
+	fonts[0][5] = 0b10001; fonts[1][5] = 0b10001;fonts[2][5] = 0b10000;fonts[3][5] = 0b10001;
+	fonts[0][6] = 0b10001; fonts[1][6] = 0b10001;fonts[2][6] = 0b10001;fonts[3][6] = 0b10010;
+	fonts[0][7] = 0b10001; fonts[1][7] = 0b11110;fonts[2][7] = 0b01110;fonts[3][7] = 0b11100;
 
 	fonts[4][0] = 0b11111; fonts[5][0] = 0b11111;fonts[6][0] = 0b01110;fonts[7][0] = 0b10001;
-	fonts[4][1] = 0b10000; fonts[5][1] = 0b10000;fonts[6][1] = 0b10000;fonts[7][1] = 0b10001;
-	fonts[4][2] = 0b11110; fonts[5][2] = 0b11110;fonts[6][2] = 0b10011;fonts[7][2] = 0b11111;
-	fonts[4][3] = 0b10000; fonts[5][3] = 0b10000;fonts[6][3] = 0b10001;fonts[7][3] = 0b10001;
-	fonts[4][4] = 0b11111; fonts[5][4] = 0b10000;fonts[6][4] = 0b01110;fonts[7][4] = 0b10001;
+	fonts[4][1] = 0b10000; fonts[5][1] = 0b10000;fonts[6][1] = 0b10001;fonts[7][1] = 0b10001;
+	fonts[4][2] = 0b10000; fonts[5][2] = 0b10000;fonts[6][2] = 0b10000;fonts[7][2] = 0b10001;
+	fonts[4][3] = 0b10000; fonts[5][3] = 0b10000;fonts[6][3] = 0b10000;fonts[7][3] = 0b10001;
+	fonts[4][4] = 0b11111; fonts[5][4] = 0b11100;fonts[6][4] = 0b10000;fonts[7][4] = 0b11111;
+	fonts[4][5] = 0b10100; fonts[5][5] = 0b10000;fonts[6][5] = 0b10011;fonts[7][5] = 0b10001;
+	fonts[4][6] = 0b10100; fonts[5][6] = 0b10000;fonts[6][6] = 0b10001;fonts[7][6] = 0b10001;
+	fonts[4][7] = 0b11111; fonts[5][7] = 0b10000;fonts[6][7] = 0b01110;fonts[7][7] = 0b10001;
 
-	fonts[4][0] = 0b11111; fonts[5][0] = 0b00111;fonts[6][0] = 0b10001;fonts[7][0] = 0b10000;
-	fonts[4][1] = 0b00100; fonts[5][1] = 0b00001;fonts[6][1] = 0b10010;fonts[7][1] = 0b10000;
-	fonts[4][2] = 0b00100; fonts[5][2] = 0b00001;fonts[6][2] = 0b11100;fonts[7][2] = 0b10000;
-	fonts[4][3] = 0b00100; fonts[5][3] = 0b00001;fonts[6][3] = 0b10010;fonts[7][3] = 0b10000;
-	fonts[4][4] = 0b11111; fonts[5][4] = 0b11110;fonts[6][4] = 0b10001;fonts[7][4] = 0b11111;
+	fonts[8][0] = 0b11111; fonts[9][0] = 0b11111;fonts[10][0] = 0b10001;fonts[11][0] = 0b10000;
+	fonts[8][1] = 0b00100; fonts[9][1] = 0b00010;fonts[10][1] = 0b10010;fonts[11][1] = 0b10000;
+	fonts[8][2] = 0b00100; fonts[9][2] = 0b00010;fonts[10][2] = 0b10100;fonts[11][2] = 0b10000;
+	fonts[8][3] = 0b00100; fonts[9][3] = 0b00010;fonts[10][3] = 0b11000;fonts[11][3] = 0b10000;
+	fonts[8][4] = 0b00100; fonts[9][4] = 0b00010;fonts[10][4] = 0b11000;fonts[11][4] = 0b10000;
+	fonts[8][5] = 0b00100; fonts[9][5] = 0b00010;fonts[10][5] = 0b10100;fonts[11][5] = 0b10000;
+	fonts[8][6] = 0b00100; fonts[9][6] = 0b00010;fonts[10][6] = 0b10010;fonts[11][6] = 0b10000;
+	fonts[8][7] = 0b11111; fonts[9][7] = 0b11100;fonts[10][7] = 0b10001;fonts[11][7] = 0b11111;
 
 	uint16_t lineCounter = 0;
 	uint8_t  vSync = 0;
@@ -118,12 +126,15 @@ int main()
 
 	for (uint8_t y = 2; y < YSIZE-10; y+=10)
 	{
-		for (uint8_t x = 0; x < XSIZE-1; x+=2)
+		for (uint8_t x = 0; x < XSIZE-1; x+=3)
 		{
-			putSymXY(x,y,3); // solid
-			putSymXY(x+1,y,4); // space
-			putSymXY(x,y+5,4);// space
-			putSymXY(x+1,y+5,3); // solid
+//			putSymXY(x,y,3); // solid
+			//putSymXY(x+1,y,4); // space
+			//putSymXY(x,y+5,4);// space
+			//putSymXY(x+1,y+5,3); // solid
+			putCharXY(x,y, 0);
+			//putCharXY(x+1,y,1);
+			//putCharXY(x+2,y,2);
 		}
 	}
 
@@ -224,15 +235,32 @@ int main()
 					// draw Pixels
 					if (yPos < YSIZE)
 					{
-						for (uint8_t x = 0; x < XSIZE; x++)
+
+						uint8_t * ptr = &screenMemory[yPos][0];
+						uint8_t thebits = *ptr;
+						uint8_t x = 0;
+						do
 						{
-							uint8_t thebits = screenMemory[yPos][x];
-							if (thebits & 0b10000) LUM_ON else LUM_OFF
-							if (thebits & 0b01000) LUM_ON else LUM_OFF
-							if (thebits & 0b00100) LUM_ON else LUM_OFF
-							if (thebits & 0b00010) LUM_ON else LUM_OFF
-							if (thebits & 0b00001) LUM_ON else LUM_OFF
-						}
+							if (thebits & 0b10000000) LUM_ON
+							if (!(thebits & 0b10000000)) LUM_OFF
+							if (thebits & 0b01000000) LUM_ON
+							if (!(thebits & 0b01000000)) LUM_OFF
+							if (thebits & 0b00100000) LUM_ON
+							if (!(thebits & 0b00100000)) LUM_OFF
+							x++;
+							if (thebits & 0b00010000) LUM_ON
+							if (!(thebits & 0b00010000)) LUM_OFF
+							if (thebits & 0b00001000) LUM_ON
+							if (!(thebits & 0b00001000)) LUM_OFF
+							if (thebits & 0b00000100) LUM_ON
+							ptr++;
+							if (!(thebits & 0b00000100)) LUM_OFF
+							if (thebits & 0b00000010) LUM_ON
+							if (!(thebits & 0b00000010)) LUM_OFF
+							if (thebits & 0b00000001) LUM_ON
+							if (!(thebits & 0b00000001)) LUM_OFF
+							thebits = *ptr;
+						} while (x < XSIZE);
 					}
 					LUM_OFF
 					// put another vertical bar at end to see what time is used processing screen memory
