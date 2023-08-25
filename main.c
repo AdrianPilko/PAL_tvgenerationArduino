@@ -2,6 +2,7 @@
 // can be ran on arduino board, pin and 12 and 13 go to centre of a 10k pot, pin 12 through a 330 Ohm resistor.
 // one side of the pot goes to VCC the other to ground and the centre of the pot also goes to the composite connector
 // centre pin. if using atmega328p on bare board (not arduino) then its PB5 and PB4.
+// load onto arduino using  using something like HexToArduino
 
 #include<avr/io.h>
 #include <util/delay.h>
